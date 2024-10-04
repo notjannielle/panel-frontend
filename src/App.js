@@ -10,6 +10,12 @@ import Orders from './pages/Orders';
 import Users from './pages/Users';
 import EditProduct from './pages/EditProduct';
 import Cookies from 'js-cookie';
+import BranchManagerDashboard from './pages/BranchManagerDashboard';
+import BranchOrders from './pages/BranchOrders'; // Import the new component
+
+
+
+
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(!!Cookies.get('userData'));
@@ -34,12 +40,15 @@ const App = () => {
           <Routes>
             <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login setIsAuthenticated={setIsAuthenticated} />} />
             <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
+            <Route path="/branch-orders" element={isAuthenticated ? <BranchOrders /> : <Navigate to="/login" />} /> {/* New route */}
+
             <Route path="/product-list" element={isAuthenticated ? <ProductList /> : <Navigate to="/login" />} />
             <Route path="/add-product" element={isAuthenticated ? <AddProduct /> : <Navigate to="/login" />} />
             <Route path="/orders" element={isAuthenticated ? <Orders /> : <Navigate to="/login" />} />
             <Route path="/users" element={isAuthenticated ? <Users /> : <Navigate to="/login" />} />
             <Route path="*" element={<Navigate to="/" />} /> {/* Redirect unknown routes */}
             <Route path="/edit-product/:id" element={isAuthenticated ? <EditProduct /> : <Navigate to="/login" />} />
+            <Route path="/branch-manager/dashboard" element={isAuthenticated ? <BranchManagerDashboard /> : <Navigate to="/login" />} />
 
           </Routes>
         </div>

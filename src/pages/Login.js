@@ -31,7 +31,8 @@ const Login = ({ setIsAuthenticated }) => {
       Cookies.set('userData', JSON.stringify({ 
         name: response.data.user.name, 
         username: response.data.user.username,
-        role: response.data.user.role
+        role: response.data.user.role,
+        branch: response.data.user.branch
       }));
       Cookies.set('token', response.data.token); // Save the token
 
@@ -48,6 +49,9 @@ const Login = ({ setIsAuthenticated }) => {
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
       <div className="bg-white shadow-md rounded px-8 py-6 w-96">
+        <div className="flex justify-center mb-6">
+          <img src="/logo.png" alt="Logo" className="h-16" /> {/* Adjust height as needed */}
+        </div>
         <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -61,7 +65,7 @@ const Login = ({ setIsAuthenticated }) => {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter your username"
               required
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
           </div>
           <div className="mb-4">
@@ -75,7 +79,7 @@ const Login = ({ setIsAuthenticated }) => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow appearance-none border border-gray-300  rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
           </div>
           {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}

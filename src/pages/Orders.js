@@ -44,9 +44,10 @@ const Orders = () => {
     const day = numberPart.substring(4, 6); // Extract day
     const hour = numberPart.substring(6, 8); // Extract hour
     const minute = numberPart.substring(8, 10); // Extract minute
+    const second = numberPart.substring(10, 12); // Added seconds
 
     // Create a date object using a valid ISO 8601 format
-    const dateString = `${year}-${month}-${day}T${hour}:${minute}:00`;
+    const dateString = `${year}-${month}-${day}T${hour}:${minute}:${second}`; // Updated format
     const date = new Date(dateString);
 
     // Check for invalid date
