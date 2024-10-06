@@ -7,9 +7,11 @@ const BranchOrders = () => {
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [notification, setNotification] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 10;
   const branch = JSON.parse(Cookies.get('userData') || '{}').branch; // Get branch from user data
+
+  // State to manage current pages for each status
+  const [currentPageByStatus, setCurrentPageByStatus] = useState({});
 
   useEffect(() => {
     const fetchBranchOrders = async () => {
@@ -23,6 +25,14 @@ const BranchOrders = () => {
 
         const filteredOrders = response.data.filter(order => order.branch === branch);
         setOrders(filteredOrders);
+
+        // Initialize current pages for each status
+        const initialPages = {};
+        const statusPriority = ['Order Received', 'Preparing', 'Ready for Pickup', 'Picked Up', 'Canceled'];
+        statusPriority.forEach(status => {
+          initialPages[status] = 1;
+        });
+        setCurrentPageByStatus(initialPages);
       } catch (error) {
         console.error('Error fetching branch orders', error);
       }
@@ -80,7 +90,7 @@ const BranchOrders = () => {
           setSelectedOrder(prev => ({ ...prev, status: newStatus }));
           setNotification(`Order status updated to "${newStatus}" successfully!`);
           setTimeout(() => setNotification(''), 3000); // Clear notification after 3 seconds
-  
+
           // Close the modal after updating the status
           handleCloseModal();
         } catch (error) {
@@ -89,7 +99,6 @@ const BranchOrders = () => {
       }
     }
   };
-  
 
   const handleCancelOrder = async () => {
     const confirmed = window.confirm('Are you sure you want to cancel this order?');
@@ -101,6 +110,7 @@ const BranchOrders = () => {
   const groupItemsByProduct = (items) => {
     const grouped = {};
     items.forEach(item => {
+      if (!item || !item.product) return; // Safeguard
       const productName = item.product.name;
       if (!grouped[productName]) {
         grouped[productName] = [];
@@ -109,13 +119,8 @@ const BranchOrders = () => {
     });
     return grouped;
   };
-
-  // Pagination logic
-  const paginateOrders = (orders) => {
-    const startIndex = (currentPage - 1) * ordersPerPage;
-    const endIndex = startIndex + ordersPerPage;
-    return orders.slice(startIndex, endIndex);
-  };
+  
+  
 
   // Status priority
   const statusPriority = ['Order Received', 'Preparing', 'Ready for Pickup', 'Picked Up', 'Canceled'];
@@ -125,15 +130,23 @@ const BranchOrders = () => {
     return acc;
   }, {});
 
-  const handleNextPage = () => {
-    if ((currentPage * ordersPerPage) < orders.length) {
-      setCurrentPage(prevPage => prevPage + 1);
+  const paginateOrders = (orders, currentPage) => {
+    const startIndex = (currentPage - 1) * ordersPerPage;
+    const endIndex = startIndex + ordersPerPage;
+    return orders.slice(startIndex, endIndex);
+  };
+
+  const handleNextPage = (status) => {
+    const currentPage = currentPageByStatus[status];
+    if ((currentPage * ordersPerPage) < ordersByStatus[status].length) {
+      setCurrentPageByStatus(prev => ({ ...prev, [status]: currentPage + 1 }));
     }
   };
 
-  const handlePrevPage = () => {
+  const handlePrevPage = (status) => {
+    const currentPage = currentPageByStatus[status];
     if (currentPage > 1) {
-      setCurrentPage(prevPage => prevPage - 1);
+      setCurrentPageByStatus(prev => ({ ...prev, [status]: currentPage - 1 }));
     }
   };
 
@@ -147,7 +160,7 @@ const BranchOrders = () => {
 
       <h2 className="text-center text-lg font-bold mb-4">Orders for {branchAddresses[branch] || capitalizeFirstLetter(branch)} Branch</h2>
 
-      {Object.entries(ordersByStatus).map(([status, orders]) => (
+      {statusPriority.map(status => (
         <div key={status} className={`mb-8 border p-4 rounded ${status === 'Canceled' ? 'border-red-500' : status === 'Picked Up' ? 'border-green-500' : status === 'Ready for Pickup' ? 'border-yellow-500' : status === 'Preparing' ? 'border-blue-500' : 'border-gray-500'}`}>
           <h3 className={`text-xl font-bold mb-2 ${status === 'Canceled' ? 'text-red-500' : status === 'Picked Up' ? 'text-green-500' : status === 'Ready for Pickup' ? 'text-yellow-500' : status === 'Preparing' ? 'text-blue-500' : 'text-gray-500'}`}>
             {status}
@@ -162,12 +175,12 @@ const BranchOrders = () => {
               </tr>
             </thead>
             <tbody className="text-gray-600 text-sm font-light">
-              {paginateOrders(orders).length === 0 ? (
+              {paginateOrders(ordersByStatus[status], currentPageByStatus[status]).length === 0 ? (
                 <tr>
                   <td colSpan="4" className="py-3 px-6 text-center">No orders found for this status.</td>
                 </tr>
               ) : (
-                paginateOrders(orders).map(order => (
+                paginateOrders(ordersByStatus[status], currentPageByStatus[status]).map(order => (
                   <tr key={order._id} 
                       className="border-b border-gray-200 hover:bg-gray-100 cursor-pointer"
                       onClick={() => handleRowClick(order)}>
@@ -180,25 +193,25 @@ const BranchOrders = () => {
               )}
             </tbody>
           </table>
+
+          <div className="flex justify-between mt-4">
+            <button 
+              onClick={() => handlePrevPage(status)} 
+              disabled={currentPageByStatus[status] === 1} 
+              className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button 
+              onClick={() => handleNextPage(status)} 
+              disabled={(currentPageByStatus[status] * ordersPerPage) >= ordersByStatus[status].length} 
+              className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
         </div>
       ))}
-
-      <div className="flex justify-between mt-4">
-        <button 
-          onClick={handlePrevPage} 
-          disabled={currentPage === 1} 
-          className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <button 
-          onClick={handleNextPage} 
-          disabled={(currentPage * ordersPerPage) >= orders.length} 
-          className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
 
       {selectedOrder && (
         <Modal onClose={handleCloseModal}>

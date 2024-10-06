@@ -13,7 +13,13 @@ const Login = ({ setIsAuthenticated }) => {
   useEffect(() => {
     const userData = Cookies.get('userData');
     if (userData) {
-      navigate('/dashboard'); // Redirect to dashboard if already logged in
+      const parsedUserData = JSON.parse(userData);
+      // Redirect based on role if already logged in
+      if (parsedUserData.role === 'owner') {
+        navigate('/dashboard');
+      } else {
+        navigate('/branch-dashboard');
+      }
     }
   }, [navigate]);
 
@@ -39,7 +45,13 @@ const Login = ({ setIsAuthenticated }) => {
       console.log('Login successful:', response.data);
 
       setIsAuthenticated(true); // Update authentication state
-      navigate('/dashboard'); // Redirect to dashboard
+
+      // Redirect based on user role
+      if (response.data.user.role === 'owner') {
+        navigate('/dashboard'); // Redirect to owner's dashboard
+      } else {
+        navigate('/branch-manager/dashboard'); // Redirect to branch manager's dashboard
+      }
     } catch (err) {
       console.error('Login error:', err);
       setError('Login failed. Please check your credentials.');
@@ -48,14 +60,14 @@ const Login = ({ setIsAuthenticated }) => {
 
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
-      <div className="bg-white shadow-md rounded px-8 py-6 w-96">
-        <div className="flex justify-center mb-6">
-          <img src="/logo.png" alt="Logo" className="h-16" /> {/* Adjust height as needed */}
+      <div className="bg-white shadow-lg rounded-lg px-10 py-12 w-full max-w-md">
+        <div className="flex justify-center mb-8">
+          <img src="/logo.png" alt="Logo" className="h-20" />
         </div>
-        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+        <h2 className="text-3xl font-bold mb-8 text-center">Escobar Vape Shop - Login Panel</h2>
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
+          <div className="mb-6">
+            <label className="block text-gray-700 text-lg font-bold mb-2" htmlFor="username">
               Username
             </label>
             <input
@@ -65,11 +77,11 @@ const Login = ({ setIsAuthenticated }) => {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter your username"
               required
-              className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow appearance-none border border-gray-300 rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+          <div className="mb-6">
+            <label className="block text-gray-700 text-lg font-bold mb-2" htmlFor="password">
               Password
             </label>
             <input
@@ -79,14 +91,14 @@ const Login = ({ setIsAuthenticated }) => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
-              className="shadow appearance-none border border-gray-300  rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow appearance-none border border-gray-300 rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
           </div>
-          {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}
+          {error && <p className="text-red-500 text-lg italic mb-6">{error}</p>}
           <div className="flex items-center justify-between">
             <button
               type="submit"
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline text-lg"
             >
               Login
             </button>

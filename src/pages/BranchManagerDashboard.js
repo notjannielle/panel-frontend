@@ -1,37 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import Cookies from 'js-cookie';
+// Dashboard.js
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const BranchManagerDashboard = () => {
-  const [products, setProducts] = useState([]);
+const Dashboard = () => {
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_ADMIN_SERVER}/api/products`, {
-          headers: {
-            Authorization: `Bearer ${Cookies.get('token')}`,
-          },
-        });
-        setProducts(response.data);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      }
-    };
-    fetchProducts();
-  }, []);
+    // Redirect to /product-list when the component mounts
+    navigate('/branch-orders-v2');
+  }, [navigate]);
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Branch Manager Dashboard</h1>
-      <h2 className="mt-4 text-xl">Products</h2>
-      <ul>
-        {products.map(product => (
-          <li key={product._id}>{product.name} - ${product.price}</li>
-        ))}
-      </ul>
+      <h1>Welcome to the Dashboard!</h1>
     </div>
   );
 };
 
-export default BranchManagerDashboard;
+export default Dashboard;

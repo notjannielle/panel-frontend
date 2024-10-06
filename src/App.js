@@ -12,7 +12,9 @@ import EditProduct from './pages/EditProduct';
 import Cookies from 'js-cookie';
 import BranchManagerDashboard from './pages/BranchManagerDashboard';
 import BranchOrders from './pages/BranchOrders'; // Import the new component
-
+import BranchOrdersV2 from './pages/BranchOrdersV2'; // Import the new component
+import BranchEditProduct from './pages/BranchEditProduct'; // Import the new component
+import BranchProductList from './pages/BranchProductList'; // Import the new component
 
 
 
@@ -49,6 +51,9 @@ const App = () => {
             <Route path="*" element={<Navigate to="/" />} /> {/* Redirect unknown routes */}
             <Route path="/edit-product/:id" element={isAuthenticated ? <EditProduct /> : <Navigate to="/login" />} />
             <Route path="/branch-manager/dashboard" element={isAuthenticated ? <BranchManagerDashboard /> : <Navigate to="/login" />} />
+            <Route path="/branch-orders-v2" element={isAuthenticated ? <BranchOrdersV2 /> : <Navigate to="/login" />} />
+            <Route path="/branch-product-list" element={isAuthenticated ? <BranchProductList /> : <Navigate to="/login" />} />
+            <Route path="/branch-edit-product/:id" element={isAuthenticated ? <BranchEditProduct /> : <Navigate to="/login" />} />
 
           </Routes>
         </div>

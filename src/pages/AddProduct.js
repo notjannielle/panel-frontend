@@ -7,14 +7,29 @@ const categories = ['Disposables', 'Pods', 'Juices', 'Devices', 'Misc'];
 const AddProduct = () => {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
-  const [image, setImage] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [imageLink, setImageLink] = useState('');
   const [price, setPrice] = useState('');
   const [variants, setVariants] = useState([{ name: '', available: { main: false, second: false, third: false } }]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [confirmationMessage, setConfirmationMessage] = useState('');
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({}); // Reset errors
+
+    const newErrors = {};
+    if (!name) newErrors.name = "Product name is required.";
+    if (!category) newErrors.category = "Category is required.";
+    if (!price) newErrors.price = "Price is required.";
+    if (!imageFile && !imageLink) newErrors.image = "Image is required."; // Check for image
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return; // Stop submission if there are errors
+    }
 
     const branches = {
       main: variants.map(variant => ({
@@ -31,17 +46,34 @@ const AddProduct = () => {
       })),
     };
 
+    let imageUrl = imageLink; // Default to image link if provided
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+
+      const response = await axios.post(`${process.env.REACT_APP_ADMIN_SERVER}/api/upload`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      imageUrl = response.data.url; // Get uploaded image URL
+    }
+
     const newProduct = {
       name,
       category,
-      image,
+      image: imageUrl,
       price: parseFloat(price),
       branches,
     };
 
     try {
       await axios.post(`${process.env.REACT_APP_ADMIN_SERVER}/api/products`, newProduct);
-      navigate('/product-list'); // Redirect after successful creation
+      setConfirmationMessage('Product added successfully!');
+      setTimeout(() => {
+        setConfirmationMessage('');
+        navigate('/product-list');
+      }, 3000);
     } catch (error) {
       console.error('Error adding product:', error);
     }
@@ -62,6 +94,10 @@ const AddProduct = () => {
     });
   };
 
+  const deleteVariant = (variantIndex) => {
+    setVariants(prevVariants => prevVariants.filter((_, index) => index !== variantIndex));
+  };
+
   const addVariant = () => {
     setVariants([...variants, { name: '', available: { main: false, second: false, third: false } }]);
   };
@@ -72,11 +108,16 @@ const AddProduct = () => {
 
   const selectCategory = (cat) => {
     setCategory(cat);
-    setIsDropdownOpen(false); // Close the dropdown when a category is selected
+    setIsDropdownOpen(false);
   };
 
   return (
     <div className="max-w-2xl mx-auto p-4 bg-white shadow-md rounded-lg">
+      {confirmationMessage && (
+        <div className="fixed top-0 left-0 right-0 bg-green-500 text-white text-center p-4 z-50 transition duration-300 ease-in-out">
+          {confirmationMessage}
+        </div>
+      )}
       <h1 className="text-2xl font-bold mb-6">Add Product</h1>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
@@ -88,6 +129,7 @@ const AddProduct = () => {
             required
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200"
           />
+          {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
         </div>
 
         <div className="mb-4">
@@ -115,15 +157,29 @@ const AddProduct = () => {
               </div>
             )}
           </div>
+          {errors.category && <p className="text-red-500 text-sm">{errors.category}</p>}
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Image URL:</label>
+          <label className="block text-sm font-medium text-gray-700">Upload Image:</label>
           <input
-            type="text"
-            value={image}
-            onChange={(e) => setImage(e.target.value)}
-            required
+            type="file"
+            accept="image/*"
+            onChange={(e) => setImageFile(e.target.files[0])}
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200"
+          />
+          {errors.image && <p className="text-red-500 text-sm">{errors.image}</p>} {/* Error for image */}
+          {imageLink && (
+            <div className="mt-2">
+              <img src={imageLink} alt="Preview" className="max-w-full h-auto rounded-md" />
+            </div>
+          )}
+          <p className="mt-2 text-sm text-gray-600">Or enter image URL:</p>
+          <input
+            type="url"
+            value={imageLink}
+            onChange={(e) => setImageLink(e.target.value)}
+            placeholder="Enter image URL (optional)"
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200"
           />
         </div>
@@ -137,6 +193,7 @@ const AddProduct = () => {
             required
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200"
           />
+          {errors.price && <p className="text-red-500 text-sm">{errors.price}</p>}
         </div>
 
         <h2 className="text-lg font-bold mb-4">Variants</h2>
@@ -169,9 +226,16 @@ const AddProduct = () => {
                 </div>
               ))}
             </div>
+            <button
+              type="button"
+              onClick={() => deleteVariant(index)}
+              className="mt-2 text-red-600 hover:text-red-800"
+            >
+              Delete Variant
+            </button>
           </div>
         ))}
-        
+
         <button
           type="button"
           onClick={addVariant}
