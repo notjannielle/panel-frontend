@@ -7,21 +7,18 @@ const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [branchPages, setBranchPages] = useState({});
   const ordersPerPage = 10;
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const token = Cookies.get('token');
-        console.log('Token:', token);
-
         const response = await axios.get(`${process.env.REACT_APP_ADMIN_SERVER}/api/orders`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-
-        console.log('Orders response:', response.data);
 
         const processedOrders = response.data.map(order => {
           const orderDate = formatOrderDateTime(order.orderNumber);
@@ -81,6 +78,13 @@ const Orders = () => {
     }
   };
 
+  const handleBranchPageChange = (branch, newPage) => {
+    setBranchPages(prevState => ({
+      ...prevState,
+      [branch]: newPage
+    }));
+  };
+
   const statusColors = {
     'Canceled': 'border-red-500 text-red-500',
     'Picked Up': 'border-green-500 text-green-500',
@@ -88,8 +92,18 @@ const Orders = () => {
     'Preparing': 'border-blue-500 text-blue-500',
   };
 
+  const ordersByBranch = orders.reduce((acc, order) => {
+    if (!acc[order.branch]) {
+      acc[order.branch] = [];
+    }
+    acc[order.branch].push(order);
+    return acc;
+  }, {});
+
   return (
     <div>
+              <h3 className="text-xl font-semibold text-gray-700">Orders Summary (All Branch)</h3>
+
       <table className="min-w-full bg-white border border-gray-200 rounded-md shadow-sm">
         <thead>
           <tr className="w-full bg-gray-100 text-left text-gray-600 uppercase text-sm leading-normal">
@@ -98,6 +112,7 @@ const Orders = () => {
             <th className="py-3 px-6">Status</th>
             <th className="py-3 px-6">Total</th>
             <th className="py-3 px-6">Date & Time</th>
+            <th className="py-3 px-6">Branch</th>
           </tr>
         </thead>
         <tbody className="text-gray-600 text-sm font-light">
@@ -114,6 +129,7 @@ const Orders = () => {
               </td>
               <td className="py-3 px-6">₱{order.total}</td>
               <td className="py-3 px-6">{order.orderDate}</td>
+              <td className="py-3 px-6">{order.branch}</td>
             </tr>
           ))}
         </tbody>
@@ -138,54 +154,98 @@ const Orders = () => {
           Next
         </button>
       </div>
+      <div className="mt-6">
+      <hr class="border-t-2 border-gray-300 my-4"></hr>
+
+        <h3 className="text-xl font-semibold text-gray-700">Orders Summary by Branch</h3>
+        {Object.keys(ordersByBranch).map(branch => {
+          const branchOrders = ordersByBranch[branch];
+          const currentBranchPage = branchPages[branch] || 1;
+          const branchIndexOfLastOrder = currentBranchPage * ordersPerPage;
+          const branchIndexOfFirstOrder = branchIndexOfLastOrder - ordersPerPage;
+          const currentBranchOrders = branchOrders.slice(branchIndexOfFirstOrder, branchIndexOfLastOrder);
+          const branchTotalPages = Math.ceil(branchOrders.length / ordersPerPage);
+
+          return (
+            <div key={branch} className="mt-4">
+              <h4 className="text-lg font-semibold text-indigo-500">{branch.charAt(0).toUpperCase() + branch.slice(1)} Branch</h4>
+              <table className="min-w-full bg-white border border-gray-200 rounded-md shadow-sm mt-2">
+                <thead>
+                  <tr className="w-full bg-gray-100 text-left text-gray-600 uppercase text-sm leading-normal">
+                    <th className="py-3 px-6">Order #</th>
+                    <th className="py-3 px-6">Customer</th>
+                    <th className="py-3 px-6">Status</th>
+                    <th className="py-3 px-6">Total</th>
+                    <th className="py-3 px-6">Date & Time</th>
+                    <th className="py-3 px-6">Branch</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-600 text-sm font-light">
+                  {currentBranchOrders.map(order => (
+                    <tr key={order._id}
+                        className="border-b border-gray-200 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => handleRowClick(order)}>
+                      <td className="py-3 px-6">{order.orderNumber}</td>
+                      <td className="py-3 px-6">{order.user.name}</td>
+                      <td className="py-3 px-6">
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${statusColors[order.status] || 'border-gray-500 text-gray-500'}`}>
+                          {order.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-6">₱{order.total}</td>
+                      <td className="py-3 px-6">{order.orderDate}</td>
+                      <td className="py-3 px-6">{order.branch}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className="flex justify-between items-center mt-4">
+                <button
+                  onClick={() => handleBranchPageChange(branch, currentBranchPage - 1)}
+                  className="bg-gray-300 text-gray-700 py-2 px-4 rounded-md"
+                  disabled={currentBranchPage === 1}
+                >
+                  Previous
+                </button>
+                <span className="text-gray-700">
+                  Page {currentBranchPage} of {branchTotalPages}
+                </span>
+                <button
+                  onClick={() => handleBranchPageChange(branch, currentBranchPage + 1)}
+                  className="bg-gray-300 text-gray-700 py-2 px-4 rounded-md"
+                  disabled={currentBranchPage === branchTotalPages}
+                >
+                  Next
+                </button>
+              </div>
+              <hr class="border-t-2 border-gray-300 my-4"></hr>
+
+            </div>
+            
+          );
+        })}
+      </div>
 
       {selectedOrder && (
-  <Modal onClose={handleCloseModal}>
-    <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-center text-indigo-600 mb-4">Order Details</h2>
-      <p className="text-lg"><strong>Order #:</strong> {selectedOrder.orderNumber}</p>
-      <p className="text-lg"><strong>Customer:</strong> {selectedOrder.user.name}</p>
-      <p className="text-lg"><strong>Contact:</strong> {selectedOrder.user.contact}</p>
-      <p className="text-lg"><strong>Status:</strong> <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${statusColors[selectedOrder.status] || 'border-gray-500 text-gray-500'}`}>{selectedOrder.status}</span></p>
-
-      <h3 className="mt-6 mb-2 text-xl font-bold text-indigo-600">Items</h3>
-
-      {['main', 'second', 'third'].map(branch => {
-        const branchItems = selectedOrder.items.filter(item => item.branch === branch);
-
-        if (branchItems.length === 0) return null;
-
-        return (
-          <div key={branch} className="mt-4">
-            <h4 className="text-lg font-semibold text-indigo-500">{branch.charAt(0).toUpperCase() + branch.slice(1)} Branch</h4>
-            <ul className="list-disc ml-5">
-              {branchItems.map(item => (
-                <li key={item._id} className="mb-2 text-gray-700">
-                  <p><strong>Product Name:</strong> {item.product.name}</p>
-                  <p>
-                    <strong>Variant:</strong> {item.variant} x{item.quantity} - ₱{item.price}
-                  </p>
-                </li>
-              ))}
-            </ul>
+        <Modal onClose={handleCloseModal}>
+          <div>
+            <h2 className="text-2xl font-semibold mb-4">Order Details</h2>
+            <p><strong>Order Number:</strong> {selectedOrder.orderNumber}</p>
+            <p><strong>Customer Name:</strong> {selectedOrder.user.name}</p>
+            <p><strong>Status:</strong> {selectedOrder.status}</p>
+            <p><strong>Total:</strong> ₱{selectedOrder.total}</p>
+            <h3 className="text-xl font-semibold mt-4 mb-2">Items</h3>
+            {selectedOrder.items.map((item, index) => (
+              <div key={index} className="mb-2">
+                <p><strong>{item.productName}</strong></p>
+                <p>Quantity: {item.quantity}</p>
+                <p>Price: ₱{item.price}</p>
+              </div>
+            ))}
           </div>
-        );
-      })}
-
-      <p className="mt-6 text-xl font-bold text-gray-800">
-        Total: ₱{selectedOrder.total}
-      </p>
-
-      <button
-        onClick={handleCloseModal}
-        className="mt-4 w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition duration-200"
-      >
-        Close
-      </button>
-    </div>
-  </Modal>
-)}
-
+        </Modal>
+      )}
     </div>
   );
 };
