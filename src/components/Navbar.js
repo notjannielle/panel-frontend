@@ -36,12 +36,12 @@ const Navbar = ({ isAuthenticated, onLogout }) => {
   return (
     <nav className="bg-white border-b border-gray-200">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4 relative">
-        <Link to="/dashboard" className="flex items-center space-x-3 rtl:space-x-reverse">
+        <div className="flex items-center space-x-3 rtl:space-x-reverse">
           <img src="/logo.png" alt="Logo" className="h-12 w-12" />
           <span className="self-center text-xl font-semibold whitespace-nowrap text-gray-900">
             Escobar Vape Cartel - Admin Panel
           </span>
-        </Link>
+        </div>
         <div className="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
           <button
             onClick={toggleMenu}
