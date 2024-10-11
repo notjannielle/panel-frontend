@@ -100,9 +100,13 @@ const Orders = () => {
     return acc;
   }, {});
 
+  const branchOrder = ['main', 'second', 'third']; // Define your desired order
+  const sortedBranches = branchOrder.filter(branch => ordersByBranch[branch])
+    .concat(Object.keys(ordersByBranch).filter(branch => !branchOrder.includes(branch)));
+
   return (
     <div>
-              <h3 className="text-xl font-semibold text-gray-700">Orders Summary (All Branch)</h3>
+      <h3 className="text-xl font-semibold text-gray-700">Orders Summary (All Branch)</h3>
 
       <table className="min-w-full bg-white border border-gray-200 rounded-md shadow-sm">
         <thead>
@@ -155,10 +159,10 @@ const Orders = () => {
         </button>
       </div>
       <div className="mt-6">
-      <hr class="border-t-2 border-gray-300 my-4"></hr>
+        <hr className="border-t-2 border-gray-300 my-4" />
 
         <h3 className="text-xl font-semibold text-gray-700">Orders Summary by Branch</h3>
-        {Object.keys(ordersByBranch).map(branch => {
+        {sortedBranches.map(branch => {
           const branchOrders = ordersByBranch[branch];
           const currentBranchPage = branchPages[branch] || 1;
           const branchIndexOfLastOrder = currentBranchPage * ordersPerPage;
@@ -177,7 +181,6 @@ const Orders = () => {
                     <th className="py-3 px-6">Status</th>
                     <th className="py-3 px-6">Total</th>
                     <th className="py-3 px-6">Date & Time</th>
-                    <th className="py-3 px-6">Branch</th>
                   </tr>
                 </thead>
                 <tbody className="text-gray-600 text-sm font-light">
@@ -194,7 +197,6 @@ const Orders = () => {
                       </td>
                       <td className="py-3 px-6">₱{order.total}</td>
                       <td className="py-3 px-6">{order.orderDate}</td>
-                      <td className="py-3 px-6">{order.branch}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -219,30 +221,45 @@ const Orders = () => {
                   Next
                 </button>
               </div>
-              <hr class="border-t-2 border-gray-300 my-4"></hr>
-
+              <hr className="border-t-2 border-gray-300 my-4" />
             </div>
-            
           );
         })}
       </div>
 
       {selectedOrder && (
         <Modal onClose={handleCloseModal}>
-          <div>
-            <h2 className="text-2xl font-semibold mb-4">Order Details</h2>
-            <p><strong>Order Number:</strong> {selectedOrder.orderNumber}</p>
-            <p><strong>Customer Name:</strong> {selectedOrder.user.name}</p>
-            <p><strong>Status:</strong> {selectedOrder.status}</p>
-            <p><strong>Total:</strong> ₱{selectedOrder.total}</p>
-            <h3 className="text-xl font-semibold mt-4 mb-2">Items</h3>
-            {selectedOrder.items.map((item, index) => (
-              <div key={index} className="mb-2">
-                <p><strong>{item.productName}</strong></p>
-                <p>Quantity: {item.quantity}</p>
-                <p>Price: ₱{item.price}</p>
-              </div>
-            ))}
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold text-center text-indigo-600 mb-4">Order Details</h2>
+            <p className="text-lg"><strong>Order #:</strong> {selectedOrder.orderNumber}</p>
+            <p className="text-lg"><strong>Customer:</strong> {selectedOrder.user.name}</p>
+            <p className="text-lg"><strong>Contact:</strong> {selectedOrder.user.contact || 'N/A'}</p>
+            <p className="text-lg"><strong>Status:</strong> <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${statusColors[selectedOrder.status] || 'border-gray-500 text-gray-500'}`}>{selectedOrder.status}</span></p>
+
+            <h3 className="mt-6 mb-2 text-xl font-bold text-indigo-600">Items</h3>
+            {selectedOrder.items && selectedOrder.items.length > 0 ? (
+              selectedOrder.items.map((item, index) => (
+                <div key={index} className="mb-2">
+                  <p><strong>Product Name:</strong> {item.product.name}</p>
+                  <p>
+                    <strong>Variant:</strong> {item.variant} x{item.quantity} - ₱{item.price}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p>No items found for this order.</p>
+            )}
+
+            <p className="mt-6 text-xl font-bold text-gray-800">
+              Total: ₱{selectedOrder.total}
+            </p>
+
+            <button
+              onClick={handleCloseModal}
+              className="mt-4 w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition duration-200"
+            >
+              Close
+            </button>
           </div>
         </Modal>
       )}
