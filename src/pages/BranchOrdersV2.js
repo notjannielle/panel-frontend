@@ -209,6 +209,12 @@ const BranchOrdersV2 = () => {
                     <p className="font-semibold">{order.orderNumber}</p>
                     <p className="text-gray-600">{order.user.name}</p>
                     <p className="font-bold text-green-600">₱{order.total}</p>
+                    <p className={`text-xs ${order.paymentMethod === 'cash' ? 'text-green-600' : 'text-blue-600'}`}>
+  {(order.paymentMethod || '').toUpperCase()}
+</p>
+
+
+
                     <p className="text-gray-500 text-xs">{formatOrderDateTime(order.orderNumber)}</p>
                   </div>
                 )}
@@ -364,6 +370,10 @@ const BranchOrdersV2 = () => {
             <td className="text-right">{selectedOrder.user.contact}</td>
           </tr>
           <tr>
+            <td className="font-bold">Payment Method:</td>
+            <td className="text-right">{capitalizeFirstLetter(selectedOrder.paymentMethod)}</td>
+          </tr>
+          <tr>
             <td className="font-bold">Status:</td>
             <td className="text-right">{selectedOrder.status}</td>
           </tr>
@@ -384,7 +394,7 @@ const BranchOrdersV2 = () => {
                   return (
                     <tr key={index}>
                       <td className="text-left pl-4">
-                        {variantName} - 
+                        - {variantName}  
                         <span className="float-right">₱{price}</span>
                       </td>
                     </tr>
