@@ -15,6 +15,7 @@ import BranchOrders from './pages/BranchOrders'; // Import the new component
 import BranchOrdersV2 from './pages/BranchOrdersV2'; // Import the new component
 import BranchEditProduct from './pages/BranchEditProduct'; // Import the new component
 import BranchProductList from './pages/BranchProductList'; // Import the new component
+import AnnouncementManager from './pages/AnnouncementManager'; // Import the new component
 
 
 
@@ -54,6 +55,7 @@ const App = () => {
             <Route path="/branch-orders-v2" element={isAuthenticated ? <BranchOrdersV2 /> : <Navigate to="/login" />} />
             <Route path="/branch-product-list" element={isAuthenticated ? <BranchProductList /> : <Navigate to="/login" />} />
             <Route path="/branch-edit-product/:id" element={isAuthenticated ? <BranchEditProduct /> : <Navigate to="/login" />} />
+            <Route path="/announcements" element={isAuthenticated ? <AnnouncementManager /> : <Navigate to="/login" />} />
 
           </Routes>
         </div>

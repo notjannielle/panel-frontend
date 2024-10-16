@@ -91,8 +91,6 @@ const Navbar = ({ isAuthenticated, onLogout }) => {
             ) : (
               <>
                 <li>
-                </li>
-                <li>
                   <Link to="/dashboard" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700">
                     Dashboard
                   </Link>
@@ -112,11 +110,13 @@ const Navbar = ({ isAuthenticated, onLogout }) => {
                     Orders
                   </Link>
                 </li>
-              {/*  <li>
-                  <Link to="/users" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700">
-                    Users
-                  </Link>
-                </li> */}
+                {role === 'owner' && ( // Show Announcement Manager link only for owner
+                  <li>
+                    <Link to="/announcements" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700">
+                      Announcement
+                    </Link>
+                  </li>
+                )}
               </>
             )}
           </ul>
