@@ -129,6 +129,8 @@ const Dashboard = () => {
       <p className="text-gray-600 mb-4">Current Date: {currentDate}</p>
       
 
+      
+
 
       {/* Total Analytics for All Branches */}
  {/* Total Analytics for All Branches */}
@@ -165,6 +167,17 @@ const Dashboard = () => {
     </div>
   </div>
 </div>
+
+<div className="mt-10">
+        <h2 className="text-2xl font-bold mb-4">Visualization</h2>
+        <iframe
+          style={{ background: '#FFFFFF', border: 'none', borderRadius: '2px', boxShadow: '0 2px 10px 0 rgba(70, 76, 79, .2)' }}
+          width="100%"
+          height="1000"
+          src="https://charts.mongodb.com/charts-project-0-vlnznuk/public/dashboards/34461ebc-335d-4d84-ad49-c6729ceb1078"
+          title="MongoDB Dashboard"
+        ></iframe>
+      </div>
 
       <hr class="border-t-2 border-gray-300 my-4"></hr>
 
