@@ -100,7 +100,7 @@ const Orders = () => {
     return acc;
   }, {});
 
-  const branchOrder = ['main', 'second', 'third']; // Define your desired order
+  const branchOrder = ['main', 'second', 'third', 'fourth']; // Define your desired order
   const sortedBranches = branchOrder.filter(branch => ordersByBranch[branch])
     .concat(Object.keys(ordersByBranch).filter(branch => !branchOrder.includes(branch)));
 

@@ -15,6 +15,8 @@ const Dashboard = () => {
       main: { totalOrders: 0, totalRevenue: 0, completedOrders: 0, canceledOrders: 0, preparingOrders: 0, readyForPickupOrders: 0, orderReceived: 0 },
       second: { totalOrders: 0, totalRevenue: 0, completedOrders: 0, canceledOrders: 0, preparingOrders: 0, readyForPickupOrders: 0, orderReceived: 0 },
       third: { totalOrders: 0, totalRevenue: 0, completedOrders: 0, canceledOrders: 0, preparingOrders: 0, readyForPickupOrders: 0, orderReceived: 0 },
+      fourth: { totalOrders: 0, totalRevenue: 0, completedOrders: 0, canceledOrders: 0, preparingOrders: 0, readyForPickupOrders: 0, orderReceived: 0 },
+
     },
   });
 
@@ -57,6 +59,8 @@ const Dashboard = () => {
         main: { totalOrders: 0, totalRevenue: 0, completedOrders: 0, canceledOrders: 0, preparingOrders: 0, readyForPickupOrders: 0, orderReceived: 0 },
         second: { totalOrders: 0, totalRevenue: 0, completedOrders: 0, canceledOrders: 0, preparingOrders: 0, readyForPickupOrders: 0, orderReceived: 0 },
         third: { totalOrders: 0, totalRevenue: 0, completedOrders: 0, canceledOrders: 0, preparingOrders: 0, readyForPickupOrders: 0, orderReceived: 0 },
+        fourth: { totalOrders: 0, totalRevenue: 0, completedOrders: 0, canceledOrders: 0, preparingOrders: 0, readyForPickupOrders: 0, orderReceived: 0 },
+
       };
   
       let totalCompletedOrders = 0;

@@ -16,6 +16,8 @@ const EditProduct = () => {
       main: [],
       second: [],
       third: [],
+      fourth: [],
+
     },
   });
   const [imageFile, setImageFile] = useState(null);
@@ -140,6 +142,8 @@ const EditProduct = () => {
         main: [...prev.branches.main, { name: '', available: false }],
         second: [...prev.branches.second, { name: '', available: false }],
         third: [...prev.branches.third, { name: '', available: false }],
+        fourth: [...prev.branches.fourth, { name: '', available: false }],
+
       },
     }));
   };
@@ -273,6 +277,18 @@ const EditProduct = () => {
                   className="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
                 />
                 <span className="ml-2 text-sm text-gray-600">Third Branch Available</span>
+              </label>
+            </div>
+
+            <div className="mt-2">
+              <label className="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  checked={product.branches.fourth[index]?.available || false}
+                  onChange={(e) => handleVariantChange(index, 'available', e.target.checked, 'fourth')}
+                  className="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+                />
+                <span className="ml-2 text-sm text-gray-600">Fourth Branch Available</span>
               </label>
             </div>
 

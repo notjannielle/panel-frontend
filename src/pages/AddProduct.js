@@ -10,7 +10,7 @@ const AddProduct = () => {
   const [imageFile, setImageFile] = useState(null);
   const [imageLink, setImageLink] = useState('');
   const [price, setPrice] = useState('');
-  const [variants, setVariants] = useState([{ name: '', available: { main: false, second: false, third: false } }]);
+  const [variants, setVariants] = useState([{ name: '', available: { main: false, second: false, third: false, fourth: false } }]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const [errors, setErrors] = useState({});
@@ -43,6 +43,10 @@ const AddProduct = () => {
       third: variants.map(variant => ({
         name: variant.name,
         available: variant.available.third,
+      })),
+      fourth: variants.map(variant => ({
+        name: variant.name,
+        available: variant.available.fourth,
       })),
     };
 
@@ -99,7 +103,7 @@ const AddProduct = () => {
   };
 
   const addVariant = () => {
-    setVariants([...variants, { name: '', available: { main: false, second: false, third: false } }]);
+    setVariants([...variants, { name: '', available: { main: false, second: false, third: false, fourth: false } }]);
   };
 
   const toggleDropdown = () => {
@@ -212,7 +216,7 @@ const AddProduct = () => {
 
             <h3 className="font-medium text-gray-700 mb-2">Availability:</h3>
             <div className="flex space-x-4">
-              {['main', 'second', 'third'].map(branch => (
+              {['main', 'second', 'third', 'fourth'].map(branch => (
                 <div key={branch}>
                   <label className="inline-flex items-center">
                     <input
