@@ -26,19 +26,21 @@ const EditProduct = () => {
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
 
+  const fetchProduct = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_ADMIN_SERVER}/api/products/${id}`);
+      setProduct(response.data);
+      setImageLink(response.data.image);
+    } catch (error) {
+      console.error('Error fetching product:', error);
+    }
+  };
+  
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_ADMIN_SERVER}/api/products/${id}`);
-        setProduct(response.data);
-        setImageLink(response.data.image);
-      } catch (error) {
-        console.error('Error fetching product:', error);
-      }
-    };
-
     fetchProduct();
   }, [id]);
+  
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,24 +53,37 @@ const EditProduct = () => {
   const handleVariantChange = (variantIndex, field, value, branch) => {
     setProduct((prev) => {
       const updatedBranches = { ...prev.branches };
-      updatedBranches[branch][variantIndex][field] = value;
+      const updatedVariant = updatedBranches[branch][variantIndex] || {};
+      
+      // Update the specific field for the selected variant in the chosen branch
+      updatedVariant[field] = value;
+  
+      // Replace the variant in the appropriate branch
+      updatedBranches[branch][variantIndex] = updatedVariant;
+  
       return {
         ...prev,
         branches: updatedBranches,
       };
     });
   };
-
-  const deleteVariant = (variantIndex, branch) => {
-    setProduct((prev) => {
-      const updatedBranches = { ...prev.branches };
-      updatedBranches[branch].splice(variantIndex, 1);
-      return {
-        ...prev,
-        branches: updatedBranches,
-      };
-    });
+  
+  const deleteVariant = async (variantIndex, branch) => {
+    const variantNameToDelete = product.branches[branch][variantIndex]?.name;
+  
+    if (variantNameToDelete) {
+      try {
+        await axios.delete(`${process.env.REACT_APP_ADMIN_SERVER}/api/products/${id}/variants`, {
+          data: { variantName: variantNameToDelete },
+        });
+        await fetchProduct(); // Wait for the product data to refresh
+      } catch (error) {
+        console.error('Error deleting variant:', error);
+      }
+    }
   };
+  
+  
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -135,18 +150,22 @@ const EditProduct = () => {
   };
 
   const addVariant = () => {
-    setProduct((prev) => ({
-      ...prev,
-      branches: {
-        ...prev.branches,
-        main: [...prev.branches.main, { name: '', available: false }],
-        second: [...prev.branches.second, { name: '', available: false }],
-        third: [...prev.branches.third, { name: '', available: false }],
-        fourth: [...prev.branches.fourth, { name: '', available: false }],
-
-      },
-    }));
+    setProduct((prev) => {
+      const newVariant = { name: '', available: false };
+  
+      return {
+        ...prev,
+        branches: {
+          ...prev.branches,
+          main: [...prev.branches.main, newVariant],
+          second: [...prev.branches.second, newVariant],
+          third: [...prev.branches.third, newVariant],
+          fourth: [...prev.branches.fourth, newVariant],
+        },
+      };
+    });
   };
+  
 
   return (
     <div className="max-w-2xl mx-auto p-4 bg-white shadow-md rounded-lg">
@@ -235,72 +254,41 @@ const EditProduct = () => {
           {errors.price && <p className="text-red-500 text-sm">{errors.price}</p>}
         </div>
 
-        <h3 className="text-xl font-semibold mb-4">Variants</h3>
-        {product.branches.main.map((variant, index) => (
-          <div key={index} className="border border-gray-300 p-4 mb-4 rounded-md">
-            <label className="block text-sm font-medium text-gray-700">Variant Name:</label>
-            <input
-              type="text"
-              value={variant.name}
-              onChange={(e) => handleVariantChange(index, 'name', e.target.value, 'main')}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200"
-            />
-            <div className="mt-2">
-              <label className="inline-flex items-center">
-                <input
-                  type="checkbox"
-                  checked={variant.available}
-                  onChange={(e) => handleVariantChange(index, 'available', e.target.checked, 'main')}
-                  className="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
-                />
-                <span className="ml-2 text-sm text-gray-600">Main Branch Available</span>
-              </label>
-            </div>
-            <div className="mt-2">
-              <label className="inline-flex items-center">
-                <input
-                  type="checkbox"
-                  checked={product.branches.second[index]?.available || false}
-                  onChange={(e) => handleVariantChange(index, 'available', e.target.checked, 'second')}
-                  className="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
-                />
-                <span className="ml-2 text-sm text-gray-600">Second Branch Available</span>
-              </label>
-            </div>
-            <div className="mt-2">
-              <label className="inline-flex items-center">
-                <input
-                  type="checkbox"
-                  checked={product.branches.third[index]?.available || false}
-                  onChange={(e) => handleVariantChange(index, 'available', e.target.checked, 'third')}
-                  className="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
-                />
-                <span className="ml-2 text-sm text-gray-600">Third Branch Available</span>
-              </label>
-            </div>
+<h3 className="text-xl font-semibold mb-4">Variants</h3>
+{product.branches.main.map((variant, index) => (
+  <div key={index} className="border border-gray-300 p-4 mb-4 rounded-md">
+    <label className="block text-sm font-medium text-gray-700">Variant Name:</label>
+    <input
+      type="text"
+      value={variant.name}
+      onChange={(e) => handleVariantChange(index, 'name', e.target.value, 'main')}
+      required
+      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200"
+    />
+    {/* Render the available checkboxes for each branch */}
+    {['main', 'second', 'third', 'fourth'].map((branch) => (
+      <div key={branch} className="mt-2">
+        <label className="inline-flex items-center">
+          <input
+            type="checkbox"
+            checked={product.branches[branch][index]?.available || false}
+            onChange={(e) => handleVariantChange(index, 'available', e.target.checked, branch)}
+            className="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+          />
+          <span className="ml-2 text-sm text-gray-600">{`${branch.charAt(0).toUpperCase() + branch.slice(1)} Branch Available`}</span>
+        </label>
+      </div>
+    ))}
+    <button
+      type="button"
+      onClick={() => deleteVariant(index, 'main')}
+      className="mt-2 text-red-600 hover:text-red-800"
+    >
+      Delete Variant
+    </button>
+  </div>
+))}
 
-            <div className="mt-2">
-              <label className="inline-flex items-center">
-                <input
-                  type="checkbox"
-                  checked={product.branches.fourth[index]?.available || false}
-                  onChange={(e) => handleVariantChange(index, 'available', e.target.checked, 'fourth')}
-                  className="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
-                />
-                <span className="ml-2 text-sm text-gray-600">Fourth Branch Available</span>
-              </label>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => deleteVariant(index, 'main')}
-              className="mt-2 text-red-600 hover:text-red-800"
-            >
-              Delete Variant
-            </button>
-          </div>
-        ))}
 
         <button
           type="button"
